@@ -1,5 +1,5 @@
 #!groovy
-// Check ub1 properties
+// Run docker build
 properties([disableConcurrentBuilds()])
 
 pipeline {
@@ -11,15 +11,19 @@ pipeline {
         timestamps()
     }
     stages {
-        stage("First step") {
+        stage("create docker image") {
             steps {
-                sh 'ssh root@errorincode.site \'hostname\''
+                echo " ============== start building image =================="
+                dir ('docker/toolbox') {
+                	sh 'docker build  . '
+                }
             }
         }
-        stage("Second step") {
-            steps {
-                sh 'ssh root@errorincode.site \'uptime\''
-            }
-        }
+	post {
+		always {
+			mail to:"pilipchuk.artem@gmail.com",
+				subject:"STATUS FOR PROJECT: ${currentBuild.fullDisplayName}", body: "RESULT: ${currentBuild.result}"
+			} 
+		}
     }
 }
